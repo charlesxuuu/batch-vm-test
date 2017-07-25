@@ -14,7 +14,7 @@
 CONTROL=""
 TIME=60
 PARALLEL=100
-EXP="shift"
+EXP="shift-lb"
 ROUND=1
 
 RSTART=151
@@ -22,7 +22,6 @@ REND=180
 
 SSTART=111
 SEND=140
-
 
 
 	for ((i=$RSTART; i<=$REND; i++))
@@ -62,10 +61,10 @@ SEND=140
 	
 	sleep 10
 
-	for ((t = 1; t <= 4; t++))
+	for ((t = 1; t <= 3; t++))
 	do
 		iperf -u -c 192.168.100.103 -b 1000M -t 5 > /dev/null &
-		sleep 10
+		sleep 15
 	done
 
 	sleep 20
@@ -88,10 +87,10 @@ SEND=140
 	
 	sleep 10
 
-	for ((t = 1; t <= 4; t++))
+	for ((t = 1; t <= 3; t++))
 	do
 		iperf -u -c 192.168.100.103 -b 1000M -t 5 > /dev/null &
-		sleep 10
+		sleep 15
 	done
 
 	sleep 20

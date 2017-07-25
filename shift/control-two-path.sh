@@ -6,7 +6,7 @@
 # Author: Charles Xu 
 # Email: xuchi.int@gmail.com
 # 
-# two path round robin background traffic with single connections on each VM
+# 
 #
 #
 
@@ -14,7 +14,7 @@
 CONTROL=""
 TIME=60
 PARALLEL=100
-EXP="shift-lb-single"
+EXP="shift-ovs-two-path"
 ROUND=1
 
 RSTART=151
@@ -23,7 +23,7 @@ REND=180
 SSTART=111
 SEND=140
 
-sudo rm -rf /home/chix/nfs-share/shift-lb-single/*
+sudo rm -rf /home/chix/nfs-share/shift-ovs-two-path/*
 
 	for ((i=$RSTART; i<=$REND; i++))
 	do
@@ -40,7 +40,7 @@ sudo rm -rf /home/chix/nfs-share/shift-lb-single/*
 
 	for ((i=$RSTART; i<=$REND; i++))
 	do
-		ssh -f -n root@192.168.100.$i "/home/chix/experiments/shift/exp-server" &
+		ssh -f -n root@192.168.100.$i "/home/chix/experiments/opportunity/exp-server" &
 	done
 
 	
@@ -53,13 +53,14 @@ sudo rm -rf /home/chix/nfs-share/shift-lb-single/*
 		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_syn_retries=10"
 	done
 
-	#tcp-cubic	
-	echo "begin"
-	for (( j=$[$SSTART]; j<=$SEND; j++ ))
-	do
-		ssh -f -n root@192.168.100.$j "/home/chix/experiments/shift/exp-client-cubic-full 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARALLEL $EXP" &
-	done
-	
+
+        #tcp-cubic      
+        echo "begin"
+        for (( j=$[$SSTART]; j<=$SEND; j++ ))
+        do
+                ssh -f -n root@192.168.100.$j "/home/chix/experiments/shift/exp-client-cubic 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARALLEL $EXP" &
+        done
+
         sleep 10
 
         for ((t = 1; t <= 6; t++))
@@ -77,23 +78,22 @@ sudo rm -rf /home/chix/nfs-share/shift-lb-single/*
         sleep 40
 
 
-
-	for (( j=$SSTART; j<=$SEND; j++ ))
-	do
-		ssh -f -n root@192.168.100.$j "sysctl net.mptcp.mptcp_syn_retries=10"
-	done
-	
+        for (( j=$SSTART; j<=$SEND; j++ ))
+        do
+                ssh -f -n root@192.168.100.$j "sysctl net.mptcp.mptcp_syn_retries=10"
+        done
 
 
 
-	#lia
-	echo "begin"
-	for (( j=$[$SSTART]; j<=$SEND; j++ ))
-	do
-		ssh -f -n root@192.168.100.$j "/home/chix/experiments/shift/exp-client-lia-full 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARALLEL $EXP" &
-	done
-	
-	        sleep 10
+
+        #lia
+        echo "begin"
+        for (( j=$[$SSTART]; j<=$SEND; j++ ))
+        do
+                ssh -f -n root@192.168.100.$j "/home/chix/experiments/shift/exp-client-lia 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARALLEL $EXP" &
+        done
+
+        sleep 10
 
         for ((t = 1; t <= 6; t++))
         do
@@ -107,7 +107,6 @@ sudo rm -rf /home/chix/nfs-share/shift-lb-single/*
                 fi
         done
 
-        sleep 40
-
+        sleep 10
 
 exit

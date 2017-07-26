@@ -62,16 +62,15 @@ int main(int argc, char *argv[])
 	if(fd1 != NULL){
 	#ifdef DEBUG
 	fprintf(fd1, "iperfcmd= %s\n", iperfcmd);
-	fprintf(fd1, "reportcmd= %s\n", reportmycmd);
+	fprintf(fd1, "reportcmd= %s\n", reportliacmd);
 	#endif
 	}
-	
-	/* my */
-        mycall("sudo sysctl net.mptcp.mptcp_enabled=1 >> log.txt");
-        mycall("sudo sysctl net.mptcp.mptcp_path_manager='fullmesh' >> log.txt");
-	mycall("sudo insmod /home/chix/mptcp_ecn.ko >> log.txt");
-	mycall("sudo sysctl net.ipv4.tcp_congestion_control='mptcp_ccc_ecn' >> log.txt");
-	mycall("sudo sysctl net.ipv4.tcp_ecn=1 >> log.txt");
+
+	/* lia */
+	mycall("sudo sysctl net.mptcp.mptcp_enabled=1 >> log.txt");
+	mycall("sudo sysctl net.mptcp.mptcp_path_manager='fullmesh' >> log.txt");
+	mycall("sysctl net.ipv4.tcp_congestion_control='lia' >> log.txt");
+	mycall("sysctl net.ipv4.tcp_ecn=1 >> log.txt");
 	mycall("sleep 2");
 
 	mycall(iperfcmd);
@@ -81,10 +80,11 @@ int main(int argc, char *argv[])
 	#else 
 	mycall("head -n -1 iperf-result.tmp > iperf-result.txt");
 	#endif
-	fprintf(fd1, "iperf-my-lines: %d \n", countline("iperf-result.txt"));
-	mycall(reportmycmd);
-	
-	printf("my done.\n");
+	fprintf(fd1, "iperf-lia-lines: %d \n", countline("iperf-result.txt"));
+	mycall(reportliacmd);
+
+	printf("lia-ecn done.\n");
+
 
 	fclose(fd1);
 

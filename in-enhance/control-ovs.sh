@@ -13,8 +13,8 @@
 
 CONTROL=""
 TIME=60
-PARASET=(10 50 100 150 200 250)
-EXP="ch-ovs"
+PARA=100
+EXP="in-enhance"
 
 RSTART=151
 REND=180
@@ -22,12 +22,14 @@ REND=180
 SSTART=111
 SEND=140
 
-sudo rm -rf /home/chix/nfs-share/ch-ovs/*
+sudo rm -rf /home/chix/nfs-share/$EXP/*
 
 
+	#send file
 	for ((i=$RSTART; i<=$REND; i++))
 	do
 		ssh -f -n root@192.168.100.$i "cp -r /home/chix/nfs-share/experiments /home/chix/"
+		
 	done
 	
 	for (( j=$SSTART; j<=$SEND; j++ ))
@@ -38,6 +40,7 @@ sudo rm -rf /home/chix/nfs-share/ch-ovs/*
 	echo "copy ok"
 	sleep 5
 
+	#start receiver
 	for ((i=$RSTART; i<=$REND; i++))
 	do
 		ssh -f -n root@192.168.100.$i "/home/chix/experiments/opportunity/exp-server" &
@@ -47,25 +50,50 @@ sudo rm -rf /home/chix/nfs-share/ch-ovs/*
 	echo "receiver ok sleep 5s"
 	sleep 5
 
+	#set 
 	for (( j=$SSTART; j<=$SEND; j++ ))
 	do
 		ssh -f -n root@192.168.100.$j "sysctl net.mptcp.mptcp_syn_retries=10"
+		ssh -f -n root@192.168.100.$j "echo 1 > /sys/module/mptcp_fullmesh/parameters/num_subflows"
 	done
 
+	
 
-	#start from 0 array index
-	for ((r=0; r<${#PARASET[@]}; r++))
+	#lia
+	echo "begin lia"
+	sudo mkdir /home/chix/nfs-share/$EXP/lia
+	for (( j=$[$SSTART]; j<=$SEND; j++ ))
 	do
-		sudo mkdir /home/chix/nfs-share/ch-ovs/${PARASET[$r]}
-		#lia
-		echo "begin ${PARASET[$r]}"
-		for (( j=$[$SSTART]; j<=$SEND; j++ ))
-		do
-			ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia 192.168.100.$j 192.168.100.$[$j+40] $TIME ${PARASET[$r]} $EXP/${PARASET[$r]}" &
-		done
-		
-		sleep $[$TIME+90]
-		echo "end ${PARASET[$r]}"
+		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_ecn=2"
+		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/lia" &
 	done
+		
+	sleep $[$TIME+90]
+	echo "end lia"
+
+	#lia-ecn
+	echo "begin lia-ecn"	
+	sudo mkdir /home/chix/nfs-share/$EXP/lia-ecn
+	for (( j=$[$SSTART]; j<=$SEND; j++ ))
+	do
+		
+		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia-ecn 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/lia-ecn" &
+	done
+
+	sleep $[$TIME+90]
+	echo "end lia-ecn"
+
+
+		
+	#our
+	echo "begin our"
+	sudo mkdir /home/chix/nfs-share/$EXP/our	
+	for (( j=$[$SSTART]; j<=$SEND; j++ ))
+	do
+		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-our 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/our" &
+	done
+		
+	echo "end our"
+
 
 exit

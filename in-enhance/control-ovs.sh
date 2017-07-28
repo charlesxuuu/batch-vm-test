@@ -13,14 +13,14 @@
 
 CONTROL=""
 TIME=60
-PARA=100
+PARA=1000
 EXP="in-enhance"
 
 RSTART=151
-REND=180
+REND=154
 
 SSTART=111
-SEND=140
+SEND=114
 
 sudo rm -rf /home/chix/nfs-share/$EXP/*
 
@@ -44,6 +44,7 @@ sudo rm -rf /home/chix/nfs-share/$EXP/*
 	for ((i=$RSTART; i<=$REND; i++))
 	do
 		ssh -f -n root@192.168.100.$i "/home/chix/experiments/opportunity/exp-server" &
+		ssh -f -n root@192.168.100.$i "sysctl net.ipv4.tcp_congestion_control=lia" &
 	done
 
 	
@@ -53,7 +54,7 @@ sudo rm -rf /home/chix/nfs-share/$EXP/*
 	#set 
 	for (( j=$SSTART; j<=$SEND; j++ ))
 	do
-		ssh -f -n root@192.168.100.$j "sysctl net.mptcp.mptcp_syn_retries=10"
+		ssh -f -n root@192.168.100.$j "sysctl net.mptcp.mptcp_syn_retries=3"
 		ssh -f -n root@192.168.100.$j "echo 1 > /sys/module/mptcp_fullmesh/parameters/num_subflows"
 	done
 
@@ -68,28 +69,33 @@ sudo rm -rf /home/chix/nfs-share/$EXP/*
 		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/lia" &
 	done
 		
-	sleep $[$TIME+90]
+	sleep $[$TIME+20]
 	echo "end lia"
 
-	#lia-ecn
-	echo "begin lia-ecn"	
-	sudo mkdir /home/chix/nfs-share/$EXP/lia-ecn
-	for (( j=$[$SSTART]; j<=$SEND; j++ ))
+
+
+	for ((t = 1; t <=5; t++))
 	do
-		
-		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia-ecn 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/lia-ecn" &
+        	for (( j=$SSTART; j<=$SEND; j++ ))
+        	do
+                	ssh -f -n root@192.168.100.$j "sudo pkill iperf" &
+        	done
+		sleep 3
 	done
 
-	sleep $[$TIME+90]
-	echo "end lia-ecn"
 
 
-		
+        for ((i=$RSTART; i<=$REND; i++))
+        do
+                ssh -f -n root@192.168.100.$i "sysctl net.ipv4.tcp_congestion_control=mptcp_ccc_ecn" &
+	done
+	
 	#our
 	echo "begin our"
 	sudo mkdir /home/chix/nfs-share/$EXP/our	
 	for (( j=$[$SSTART]; j<=$SEND; j++ ))
 	do
+		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_ecn=1" &
 		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-our 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/our" &
 	done
 		

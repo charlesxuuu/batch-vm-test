@@ -42,27 +42,17 @@ int main(int argc, char *argv[])
 	sprintf(iperfcmd, "iperf -c %s -t %s -f m -P %s |grep bits/sec > iperf-result.tmp", argv[2], argv[3], argv[4]);
 	
 	
-	char reportcubiccmd[100] = "";
-	sprintf(reportcubiccmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt",  argv[5], "cubic", argv[1], time_stamp() );
 
-	char reportdctcpcmd[100] = "";
-	sprintf(reportdctcpcmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt",  argv[5], "dctcp", argv[1], time_stamp() );
 
-	char reportliacmd[100] = "";
-	sprintf(reportliacmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt",  argv[5], "lia", argv[1], time_stamp() );
-
-	char reportecncmd[100] = "";
-	sprintf(reportecncmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt", argv[5], "ecn", argv[1], time_stamp() );
-
-	char reportmycmd[100] = "";
-	sprintf(reportmycmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt",  argv[5], "my", argv[1], time_stamp() );
+	char reportourcmd[100] = "";
+	sprintf(reportourcmd, "mv iperf-result.txt /home/chix/nfs-share/%s/%s-%s-%s.txt",  argv[5], "our", argv[1], time_stamp() );
 
 
 
 	if(fd1 != NULL){
 	#ifdef DEBUG
 	fprintf(fd1, "iperfcmd= %s\n", iperfcmd);
-	fprintf(fd1, "reportcmd= %s\n", reportliacmd);
+	fprintf(fd1, "reportcmd= %s\n", reportourcmd);
 	#endif
 	}
 
@@ -71,7 +61,7 @@ int main(int argc, char *argv[])
 	mycall("sudo sysctl net.mptcp.mptcp_path_manager='fullmesh' >> log.txt");
 	mycall("sudo insmod /home/chix/mptcp_ecn.ko >> log.txt");
 	mycall("sudo sysctl net.ipv4.tcp_congestion_control='mptcp_ccc_ecn' >> log.txt");
-	mycall("sudo sysctl net.ipv4.tcp_ecn=1 >> log.txt");
+	mycall("sudo sysctl net.ipv4.tcp_ecn=1");
 	mycall("sleep 2");
 
 	mycall(iperfcmd);
@@ -82,7 +72,7 @@ int main(int argc, char *argv[])
 	mycall("head -n -1 iperf-result.tmp > iperf-result.txt");
 	#endif
 	fprintf(fd1, "iperf-our-lines: %d \n", countline("iperf-result.txt"));
-	mycall(reportliacmd);
+	mycall(reportourcmd);
 
 	printf("our done.\n");
 

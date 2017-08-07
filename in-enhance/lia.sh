@@ -60,7 +60,7 @@ sudo rm -rf /home/chix/nfs-share/$EXP/*
 
         for ((i=$RSTART; i<=$REND; i++))
         do
-	ssh -f -n root@192.168.100.$i "sysctl net.ipv4.tcp_congestion_control=mptcp_ccc_ecn" &
+	ssh -f -n root@192.168.100.$i "sysctl net.ipv4.tcp_congestion_control=lia" &
 	done
 	
 	#our
@@ -68,9 +68,9 @@ sudo rm -rf /home/chix/nfs-share/$EXP/*
 	sudo mkdir /home/chix/nfs-share/$EXP/our	
 	for (( j=$[$SSTART]; j<=$SEND; j++ ))
 	do
-		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_ecn=1" &
-		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_congestion_control='mptcp_ccc_ecn'" &
-		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-our 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/our" &
+		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_ecn=2" &
+		ssh -f -n root@192.168.100.$j "sysctl net.ipv4.tcp_congestion_control='lia'" &
+		ssh -f -n root@192.168.100.$j "/home/chix/experiments/opportunity/exp-client-lia 192.168.100.$j 192.168.100.$[$j+40] $TIME $PARA $EXP/our" &
 	done
 	echo "end our"
 exit

@@ -12,7 +12,7 @@
 
 
 SSTART=111
-SEND=140
+SEND=122
 
 	for (( j=$SSTART; j<=$SEND; j++ ))
 	do
@@ -22,7 +22,7 @@ SEND=140
 	
 
 RSTART=151
-REND=180
+REND=162
 
 	for ((i=$RSTART; i<=$REND; i++))
 	do

@@ -68,27 +68,6 @@ fi
 sudo rm -rf /home/chix/nfs-share/$EXP/*
 
 
-#send file
-for ((i=$RSTART; i<=$REND; i++))
-do
-	ssh -f -n root@192.168.100.$i "cp -r /home/chix/nfs-share/experiments /home/chix/"
-	ssh -f -n root@192.168.100.$i "insmod /home/chix/nfs-share/mptcp_ecn_sf.ko"
-	sleep 0.5
-	ssh -f -n root@192.168.100.$i "bash /root/in-vm-network-tuning.sh > /dev/null" &
-done
-	
-for ((j=$SSTART; j<=$SEND; j++))
-do	
-	ssh -f -n root@192.168.100.$j "cp -r /home/chix/nfs-share/experiments /home/chix/"
-	ssh -f -n root@192.168.100.$j "insmod /home/chix/nfs-share/mptcp_ecn_sf.ko"
-	sleep 0.5
-	ssh -f -n root@192.168.100.$j "bash /root/in-vm-network-tuning.sh > /dev/null" &
-done
-
-echo "copy ok"
-sleep 5
-
-
 for ((r=0; r<=$ROUND; r++))
 do
 
@@ -98,21 +77,35 @@ do
 
 	sudo rm -rf /home/chix/nfs-share/$EXP/$r/*
 
-	#clean previous iperf
+	#start vm
+	#crazy: first let us kill all vm
 
-	for ((j=$SSTART; j<=$SEND; j++))
-	do
-		ssh -f -n root@192.168.100.$j "sudo pkill iperf" &
-		ssh -f -n root@192.168.100.$j "sudo pkill iperf" &
-		ssh -f -n root@192.168.100.$j "sudo pkill iperf" &
-	done
+	sudo pkill qemu 
+	ssh -f -n root@192.168.1.59 "pkill qemu"
 
+	sleep 5
+
+	#then start
+	echo "starting vm"
+	bash start-vm-on-two-host.sh
+	sleep 60
+
+	#send file
 	for ((i=$RSTART; i<=$REND; i++))
 	do
-		ssh -f -n root@192.168.100.$i "sudo pkill iperf" &
-		ssh -f -n root@192.168.100.$i "sudo pkill iperf" &
-		ssh -f -n root@192.168.100.$i "sudo pkill iperf" &
+		ssh -f -n root@192.168.100.$i "cp -r /home/chix/nfs-share/experiments /home/chix/"
+		sleep 0.5
+		ssh -f -n root@192.168.100.$i "bash /root/in-vm-network-tuning.sh > /dev/null" 
 	done
+	
+	for ((j=$SSTART; j<=$SEND; j++))
+	do	
+		ssh -f -n root@192.168.100.$j "cp -r /home/chix/nfs-share/experiments /home/chix/"
+		sleep 0.5
+		ssh -f -n root@192.168.100.$j "bash /root/in-vm-network-tuning.sh > /dev/null" 
+	done
+
+	sleep 5
 
 	#change cc
 		#protm1 3 machin
@@ -177,6 +170,19 @@ do
 		ssh -f -n root@192.168.100.$i "sudo pkill iperf" &
 	done
 
+	#shutdown vm
+
+	for ((j=$SSTART; j<=$SEND; j++))
+	do
+		ssh -f -n root@192.168.100.$j "shutdown -h now"
+	done
+
+	for ((i=$RSTART; i<=$REND; i++))
+	do
+		ssh -f -n root@192.168.100.$i "shutdown -h now" 
+	done
+	sleep 15
+	
 	echo "end round $r"
 
 done

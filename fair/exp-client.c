@@ -10,7 +10,7 @@
 #include <time.h>
 
 #define DEBUG 
-#define SUM
+//#define SUM
 
 int mycall(const char * cmdstring);
 void error (const char * msg);
@@ -54,13 +54,14 @@ int main(int argc, char *argv[])
 	mycall(iperfcmd);
 	mycall("sleep 1");
 	#ifdef SUM
-	mycall("cat iperf-result.tmp > iperf-result.txt");
+		mycall("cat iperf-result.tmp > iperf-result.txt");
 	#else 
-	mycall("head -n -1 iperf-result.tmp > iperf-result.txt");
+		//mycall("head -n -1 iperf-result.tmp > iperf-result.txt");
+		mycall("sed '/SUM/d' iperf-result.tmp > iperf-result.txt");
 	#endif
 	fprintf(fd1, "iperf-lia-lines: %d \n", countline("iperf-result.txt"));
 	mycall(reportliacmd);
-	printf("%s done.\n", argv[5]);
+	printf("%s %s %s %s done.\n", argv[5], argv[6], argv[7], argv[1]);
 	fclose(fd1);
      	return 0;
 }

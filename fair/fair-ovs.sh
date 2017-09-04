@@ -31,8 +31,8 @@ ROUND=1
 
 protm1=(cu lu)
 protm2=(lu wu)
-protm3=(lu ou)
-protm4=(cu bu)
+protm3=(wu ou)
+protm4=(ru bu)
 
 
 function checkcc()

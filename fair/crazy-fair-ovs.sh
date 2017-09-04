@@ -22,17 +22,17 @@ REND=162
 SSTART=111
 SEND=122
 
-ROUND=1
+ROUND=0
 
 #protm1=(cu cu cu ce de de de de)
 #protm2=(lu wu wu be le oe we be)
 #protm3=(ou bu wu be le oe we be)
 #protm4=(du iu cu ce de de de de)
 
-protm1=(cu lu)
-protm2=(lu wu)
-protm3=(lu ou)
-protm4=(cu bu)
+protm1=(cu cu lu)
+protm2=(cu lu wu)
+protm3=(lu wu ou)
+protm4=(lu ru bu)
 
 
 function checkcc()
